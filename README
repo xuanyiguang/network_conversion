@@ -1,0 +1,150 @@
+TOPL network is built around "scenario". A rough structure of network topology is described as below.
+
+- scenario
+     - network
+          - NodeList
+               - node
+          - LinkList
+               - link
+          - SensorList
+               - sensor
+
+The key elements are "node" and "link". They are described in detail here.
+
+- node 
+     - attributes
+          - name: required
+          - type: required, essential
+               - F: freeway node
+               - S: signalized intersection
+               - T: terminal
+               - other types like H (highway node), P (stop sign), O (other) do not matter
+          - id: required, unique
+          - lock
+     - elements
+          - description
+          - postmile
+          - outputs
+               - output (with attribute link_id: required, essential)
+          - inputs
+               - input (with attribute link_id: required, essential)
+                    - weavingfactor
+          - position
+               - point (with attributes lat and lng: required, essential)
+
+- link
+     - attributes
+          - name
+          - road_name
+          - lanes: required, essential
+          - lane_offset
+          - length: required, essential
+          - type: required, essential
+               - types do not matter, only used for sanity check
+          - id: required, unique
+          - record
+     - elements
+          - description
+          - begin (with attribute node_id: required, essential)
+          - end (with attribute node_id: required, essential)
+          - fd (with attributes densityCritical, flowMax, densityJam: required, essential; also attribute capacityDrop)
+          - dynamics (with attribute type = "CTM")
+          - qmax
+          - LinkGeometry
+
+- sensor
+     - attributes
+          - id: required
+          - type: required (loop, radar, camera, sensys)
+          - link_type: required (FW, HOV, OR, FR)
+     - elements
+          - description (name)
+          - position
+               - point (attributes: lat (required), lng (required))
+          - display_position 
+               - point (attributes: lat (required), lng (required))
+          - links: link id
+          - parameters
+               - vds and data_id (essential)
+               - lanes (essential)
+          - data_sources 
+               - source (attributes: url (required), dt (required), format (required: PeMS Data Clearinghouse, Caltrans DBX, BHL)
+
+The process to create TOPL network from model graph is described as below.
+
+1. Download JAXB. 
+
+TOPL has a schema (the file I got from Joel is called "aurora.xsd"), and JAXB is used to create java objects (with only the instance variables, and getters, setters) from the schema automatically. JAXB is convenient in that it has marshall and unmarshall methods to automatically deal with the XML formats. 
+
+Example: The file I downloaded on March 7, 2012 from this location (http://jaxb.java.net/) is called "JAXB2_20120218.jar". Run it. Scroll down the terms and accept. A folder named "jaxb-ri-20120218" will be created at the same place. This process requires the path of "java.exe" to be added to PATH in Environment Variables. Google it if you encounter this problem. 
+
+2. Create a java project (I used Eclipse) and automatically create java classes from schema with xjc.
+
+2.1. My project is in folder "C:\Users\Xuan\workspace\ICM\NetGen". Source code is in the "src" folder with package name "icm.netgen". To include java classes generated from xjc, create a new package in the source folder ("NetGen/src" in my case). I name the new package "icm.toplschema". 
+
+2.2. Now we need to run the "xjc" command from JAXB. "xjc" is the binding compiler of JAXB. It automatically create .java files from the specified schema. The way to run "xjc" is as follows. 
+[path]\xjc.bat -p [package name] [schema file] -d [destination folder]
+
+More details can be found here. 
+http://docs.oracle.com/javase/6/docs/technotes/tools/share/xjc.html
+
+In my case, I created a binder.bat file with the following content.
+"C:\Program Files (x86)\Java\jaxb-ri-20120218\bin\xjc.bat" -p icm.toplschema aurora.xsd -d "C:\Users\Xuan\workspace\ICM\NetGen\src"
+
+2.3. If you check your folder "C:\Users\Xuan\workspace\ICM\NetGen\src\icm\toplschema", you will find a bunch of .java files. (In case of errors, run the command in shell, and read the error message.) Now if right click on the new package "icm.toplschema", and click "refresh", the java files will be included in the java project.
+
+2.4. Check the code. There seems be one error in class Monitor. TOPL people said it is known, so comment out lines 64-69 (shown below). The error should be gone.
+
+    @XmlElementRefs({
+        @XmlElementRef(name = "controlled", type = Controlled.class, required = false),
+        @XmlElementRef(name = "controller", type = Controller.class, required = false),
+        @XmlElementRef(name = "monitored", type = Monitored.class, required = false),
+        @XmlElementRef(name = "LinkPairs", type = LinkPairs.class, required = false)
+    })
+
+3. Now create my own methods to read model graph links from the DB and write the info to the java objects created from TOPL schema.
+
+Note that both TOPL and MM code defines their own Network class (and probably many other classes) with the same name. So be very cautious whose Network to refer to.
+
+4. marshall
+
+You will need to add the following method to class Scenario. The parameter for JAXBContext.newInstance() is the name of the package, in my case "icm.toplschema".
+
+     public void saveToXML(String filename){
+        try {
+            JAXBContext context = JAXBContext.newInstance("icm.toplschema");
+            Marshaller m = context.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            m.marshal(this,new FileOutputStream(filename));
+        } catch( JAXBException je ) {
+            je.printStackTrace();
+            return;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+5. Run the code that I wrote, currently located in "icm.netgen" package.
+
+6. Notes:
+
+6.1. Requirements for TOPL to run with the generated XML files
+- The id of TOPL network has to be a number, although its type is string.
+- The name of a node is required, but it can be an empty string.
+- The node type "O" (other) needs to be changed to "F" (freeway). Reason unknown.
+- Terminal nodes should not have inputs or outputs elements. The connectivity information in stored in links. 
+- Each terminal node can only be associated with one link (links cannot share terminal nodes).
+- link type "D" (dummy link) does not pass the consistency test
+- link type "ST" (street) can run in the simulation if consistency test is deactivated
+
+6.2. Other discoveries along the way:
+- Model graph links can have variable number of lanes (and speed limit). The location where the number of lanes (or speed limit) change is available in model graph links.
+- Navteq links have information on: signal, stop sign, speed limit, number of lanes, which are used here. 
+- Navteq links also provide information on functional classification (function_class) of links (from 1 to 5: US-101 and I-280 are class 2; El Camino Real is class 3; model graph includes class 5, but not residential area). Navteq links are not (weakly at most) correlated with link type, because the speed limit can go as high as 65mph on class 3 roads.
+- Link type (highway, arterial, ramp) is available in the database (schema model_graph, table link), but not the java objects.
+- Originally I think the criterion for signalized intersection should be when all incoming links (# of links > 0) of a node have signal at the end of the link. I tested some nodes (NavteqNode id 4674 and 32741). At node 4674, 4 of the 5 incoming links say the node has signal, 1 disagree; verification with google street view indicate there is a signal. At node 32741, 2 of the 4 incoming links say the node has a signal, 2 disagree; verification again show signal. The criterion is therefore changed, so that a node is a signalized intersection as long as one incoming link has a signal at the end of the link.
+
+6.3. Code in NETCONFIG has been changed to pull VDS ID of PeMS stations. A copy the changed code is commit to repo, and the corresponding CORE.jar and NETCONFIG.jar are used as part of the library in Eclipse.
+
+

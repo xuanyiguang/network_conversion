@@ -1011,6 +1011,14 @@ public class Util {
 		Parameter parameter_lanes = new Parameter();
 		parameter_lanes.setName("lanes");
 		parameter_lanes.setValue(Integer.toString(sensorPeMS.lanes));
+		int linkLanes = sensorPeMS.link.getMax_num_lanes().intValue();
+		if (sensorPeMS.lanes != linkLanes) {
+			parameter_lanes.setValue(Integer.toString(linkLanes));
+			Monitor.out("Lane number mismatch: vds = " + sensorPeMS.vdsID
+					+ ", linkID = " + sensorPeMS.link.id
+					+ ", setting sensorLanes to " + linkLanes
+					+ " according to linkLanes instead of " + sensorPeMS.lanes);
+		}
 		parameters.getParameter().add(parameter_lanes);
 
 		Parameter parameter_offset_in_link = new Parameter();
@@ -1282,6 +1290,36 @@ public class Util {
 		} else {
 			return false;
 		}
+	}
+
+	public static boolean sanityCheckTOPLLaneNumberMatch(LinkList linkList,
+			SensorList sensorList) {
+
+		boolean flag = true;
+
+		for (Sensor s : sensorList.getSensor()) {
+			int sensorLanes = 0;
+			int vdsID = 0;
+			for (Parameter p : s.getParameters().getParameter()) {
+				if (p.getName().equalsIgnoreCase("lanes")) {
+					sensorLanes = Integer.parseInt(p.getValue());
+				}
+				if (p.getName().equalsIgnoreCase("vds")) {
+					vdsID = Integer.parseInt(p.getValue());
+				}
+			}
+			int linkID = Integer.parseInt(s.getLinks().getContent());
+			int index = findLinkInLinkList(linkList, linkID);
+			int linkLanes = linkList.getLink().get(index).getLanes().intValue();
+			if (sensorLanes != linkLanes) {
+				Monitor.err("Lane number does not match: link = " + linkID
+						+ ", PeMS VDS = " + vdsID + ", linkLanes = "
+						+ linkLanes + ", sensorLanes = " + sensorLanes);
+				flag = false;
+			}
+		}
+
+		return flag;
 	}
 
 	/**

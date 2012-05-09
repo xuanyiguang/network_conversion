@@ -198,6 +198,8 @@ public class NetGen {
 				+ Util.sanityCheckTOPLNodeUnique(nodeList));
 		Monitor.out("Sanity check (unique link id): "
 				+ Util.sanityCheckTOPLLinkUnique(linkList));
+		Monitor.out("Sanity check (lane number from link and sensor match): "
+				+ Util.sanityCheckTOPLLaneNumberMatch(linkList, sensorList));
 
 		// connect the Network object back to the Scenario object
 		network.setNodeList(nodeList);
