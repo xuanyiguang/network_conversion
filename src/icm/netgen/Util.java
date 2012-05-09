@@ -56,7 +56,7 @@ public class Util {
 	public static boolean flagSubdivisionLink = true;
 
 	/** divide the network into north and south directions when flag = true */
-	public static boolean flagSubdivisionNetwork = true;
+	public static boolean flagSubdivisionNetwork = false;
 
 	/** the nid of the Highway network to obtain links and nodes */
 	public static int nidHighway = 227;
@@ -179,6 +179,27 @@ public class Util {
 			return false;
 		}
 
+	}
+
+	public static boolean sanityCheck3(ModelGraphLink[] modelGraphLinks) {
+
+		Monitor.out(Util.LINE);
+		boolean flag = true;
+		float dt = 6.0f;
+
+		for (ModelGraphLink l : modelGraphLinks) {
+			float speedLimit = l.getAverageSpeedLimit();
+			float minLinkLength = speedLimit * dt;
+			float linkLength = l.getLength();
+			if (linkLength < minLinkLength) {
+				Monitor.err("Short link (MM): link = " + l.id + ", length = "
+						+ linkLength + ", minLength = " + minLinkLength);
+				flag = false;
+			}
+		}
+
+		Monitor.out("Sanity check (short links): " + flag);
+		return flag;
 	}
 
 	/**
@@ -1323,6 +1344,29 @@ public class Util {
 			}
 		}
 
+		return flag;
+	}
+
+	public static boolean sanityCheckTOPLCFLCondition(LinkList linkList,
+			BigDecimal dt) {
+
+		Monitor.out(Util.LINE);
+
+		boolean flag = true;
+
+		for (Link link : linkList.getLink()) {
+			float flowMax = Float.parseFloat(link.getFd().getFlowMax());
+			float densityCritical = Float.parseFloat(link.getFd()
+					.getDensityCritical());
+			float speedLimit = flowMax / densityCritical;
+			float minLinkLength = speedLimit / 3.6f * dt.floatValue();
+			if (link.getLength().floatValue() < minLinkLength) {
+				Monitor.err("Short link: link = " + link.getId() + ", type = "
+						+ link.getType() + ", length = " + link.getLength()
+						+ ", min length = " + minLinkLength);
+				flag = false;
+			}
+		}
 		return flag;
 	}
 

@@ -97,7 +97,8 @@ public class NetGen {
 		// sanity check on the Highway network
 		Util.sanityCheck1(modelGraphLinks, modelGraphNodes);
 		Util.sanityCheck2(modelGraphLinks, modelGraphNodes, netHighway);
-
+		Util.sanityCheck3(modelGraphLinks);
+		
 		// Write info to TOPL network
 		Scenario scenario = initializeScenario();
 
@@ -193,6 +194,9 @@ public class NetGen {
 				+ Util.sanityCheckTOPLLinkUnique(linkList));
 		Monitor.out("Sanity check (lane number from link and sensor match): "
 				+ Util.sanityCheckTOPLLaneNumberMatch(linkList, sensorList));
+		Monitor.out("Sanity check (short link): "
+				+ Util.sanityCheckTOPLCFLCondition(linkList, scenario
+						.getNetwork().getDt()));
 
 		// connect the links, nodes and sensors back to the Network object
 		scenario.getNetwork().setNodeList(nodeList);
@@ -337,11 +341,14 @@ public class NetGen {
 						}
 					}
 				}
-				
-				Monitor.out("Number of TOPL nodes in subnetwork: " + nodeListSubset.getNode().size());
-				Monitor.out("Number of TOPL links in subnetwork: " + linkListSubset.getLink().size());
-				Monitor.out("Number of TOPL sensors in subnetwork: " + sensorListSubset.getSensor().size());
-				
+
+				Monitor.out("Number of TOPL nodes in subnetwork: "
+						+ nodeListSubset.getNode().size());
+				Monitor.out("Number of TOPL links in subnetwork: "
+						+ linkListSubset.getLink().size());
+				Monitor.out("Number of TOPL sensors in subnetwork: "
+						+ sensorListSubset.getSensor().size());
+
 				scenario.getNetwork().setNodeList(nodeListSubset);
 				scenario.getNetwork().setLinkList(linkListSubset);
 				scenario.getNetwork().setSensorList(sensorListSubset);
