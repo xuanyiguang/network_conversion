@@ -21,6 +21,7 @@ import core.Monitor;
 public class NetGen {
 
 	/**
+	 * Testing git functionality
 	 * @param args
 	 * @throws NetconfigException
 	 */
