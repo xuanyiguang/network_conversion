@@ -50,7 +50,7 @@ public class Util {
 	/** id of the network in TOPL schema */
 	public static String NETWORK_ID = "1";
 	/** name of the network in TOPL schema */
-	public static String NETWORK_NAME = "US101 CSMP network with ramps and PeMS stations";
+	public static String NETWORK_NAME = "US101 CSMP network with ramps and PeMS stations and links subdivided";
 
 	/** divide long links into smaller links (cells) when flag = true */
 	public static boolean flagSubdivisionLink = true;
@@ -63,7 +63,7 @@ public class Util {
 	/** the nid of the Hybrid network to obtain ramps */
 	public static int nidHybrid = 228;
 	/** output file name */
-	public static String OUTPUT_FILENAME = "US101_CSMP_ramp_PeMS_subdivisionlink.xml";
+	public static String OUTPUT_FILENAME = "US101_CSMP_ramp_PeMS_subdivisionlink";
 
 	/**
 	 * 
@@ -1375,4 +1375,32 @@ public class Util {
 		return -1;
 	}
 
+	/**
+	 * For all the on-ramps and off-ramps just added, also need to update the
+	 * input and output links of existing nodes on freeway
+	 * 
+	 * @param nodeList
+	 * @param linkList
+	 */
+	public static void updateExistingNodesInputOutput(NodeList nodeList,
+			LinkList linkList) {
+
+		for (Link link : linkList.getLink()) {
+			if (link.getType().equals("OR")) {
+				int nodeID = Integer.parseInt(link.getEnd().getNodeId());
+				int nodeIndex = Util.findNodeInNodeList(nodeList, nodeID);
+				Input input = new Input();
+				input.setLinkId(link.getId());
+				nodeList.getNode().get(nodeIndex).getInputs().getInput()
+						.add(input);
+			} else if (link.getType().equals("FR")) {
+				int nodeID = Integer.parseInt(link.getBegin().getNodeId());
+				int nodeIndex = Util.findNodeInNodeList(nodeList, nodeID);
+				Output output = new Output();
+				output.setLinkId(link.getId());
+				nodeList.getNode().get(nodeIndex).getOutputs().getOutput()
+						.add(output);
+			}
+		}
+	}
 }
