@@ -53,14 +53,17 @@ public class Util {
 	public static String NETWORK_NAME = "US101 CSMP network with ramps and PeMS stations";
 
 	/** divide long links into smaller links (cells) when flag = true */
-	public static boolean flagSubdivision = false;
+	public static boolean flagSubdivisionLink = true;
+
+	/** divide the network into north and south directions when flag = true */
+	public static boolean flagSubdivisionNetwork = true;
 
 	/** the nid of the Highway network to obtain links and nodes */
 	public static int nidHighway = 227;
 	/** the nid of the Hybrid network to obtain ramps */
 	public static int nidHybrid = 228;
 	/** output file name */
-	public static String OUTPUT_FILENAME = "US101_CSMP_ramp_PeMS.xml";
+	public static String OUTPUT_FILENAME = "US101_CSMP_ramp_PeMS_subdivisionlink.xml";
 
 	/**
 	 * 
@@ -420,7 +423,7 @@ public class Util {
 			TrafficFlowSource[] sources, TrafficFlowSink[] sinks,
 			netconfig.Network netHybrid, ArrayList<Integer> terminalNodesID,
 			ArrayList<Integer> signalNodesID,
-			ArrayList<Integer> freewayNodesID, boolean flagSubdivision)
+			ArrayList<Integer> freewayNodesID, boolean flagSubdivisionLink)
 			throws NetconfigException {
 
 		NodeList nodeList = new NodeList();
@@ -429,7 +432,7 @@ public class Util {
 
 		for (ModelGraphNode n : modelGraphNodes) {
 
-			node = parseSingleModelGraphNode(n, flagSubdivision);
+			node = parseSingleModelGraphNode(n, flagSubdivisionLink);
 
 			// set node type
 			// if node id is within terminalNodesID, then it is a terminal node
@@ -456,9 +459,9 @@ public class Util {
 			nodeList.getNode().add(node);
 		}
 
-		// add newly generated nodes due to subdivision
+		// add newly generated nodes due to subdivision of links
 		for (ModelGraphLink l : modelGraphLinks) {
-			nodes = parseNodesSubdivision(l, flagSubdivision);
+			nodes = parseNodesSubdivision(l, flagSubdivisionLink);
 
 			// set type of new node to "F" (freeway)
 			for (Node n : nodes) {
@@ -536,7 +539,7 @@ public class Util {
 	 * @throws NetconfigException
 	 */
 	public static Node parseSingleModelGraphNode(ModelGraphNode modelGraphNode,
-			boolean flagSubdivision) throws NetconfigException {
+			boolean flagSubdivisionLink) throws NetconfigException {
 
 		// instantiate a node object
 		Node node = new Node();
@@ -569,7 +572,7 @@ public class Util {
 			outLinks = modelGraphNode.getOutLinks();
 			for (int j = 0; j < outLinks.length; j++) {
 				output = new Output();
-				if (!flagSubdivision) {
+				if (!flagSubdivisionLink) {
 					output.setLinkId(Integer.toString(outLinks[j].id));
 				} else {
 					// cell id is always 0 or "00" for output links when
@@ -594,7 +597,7 @@ public class Util {
 			inLinks = modelGraphNode.getInLinks();
 			for (int j = 0; j < inLinks.length; j++) {
 				input = new Input();
-				if (!flagSubdivision) {
+				if (!flagSubdivisionLink) {
 					input.setLinkId(Integer.toString(inLinks[j].id));
 				} else {
 					// cell id always takes the maximal number
@@ -615,12 +618,12 @@ public class Util {
 	}
 
 	public static ArrayList<Node> parseNodesSubdivision(
-			ModelGraphLink modelGraphLink, boolean flagSubdivision)
+			ModelGraphLink modelGraphLink, boolean flagSubdivisionLink)
 			throws NetconfigException {
 
 		ArrayList<Node> nodes = new ArrayList<Node>();
 
-		if (flagSubdivision) {
+		if (flagSubdivisionLink) {
 			// the id of extra nodes will be ccccc01, ccccc02, ccccc03
 			// (for 4 cells) if the original link id is ccccc
 			for (int cellID = 1; cellID < modelGraphLink.nbCells; cellID++) {
@@ -707,7 +710,7 @@ public class Util {
 			ModelGraphLink[] modelGraphLinks, ModelGraphNode[] modelGraphNodes,
 			TrafficFlowSource[] sources, TrafficFlowSink[] sinks,
 			netconfig.Network netHybrid, ArrayList<Integer> terminalNodesID,
-			boolean flagSubdivision) throws NetconfigException {
+			boolean flagSubdivisionLink) throws NetconfigException {
 
 		LinkList linkList = new LinkList();
 		ArrayList<Link> links;
@@ -716,7 +719,7 @@ public class Util {
 		int count = 0;
 		for (ModelGraphLink l : modelGraphLinks) {
 
-			links = parseSingleModelGraphLink(l, flagSubdivision);
+			links = parseSingleModelGraphLink(l, flagSubdivisionLink);
 
 			// add links to the linkList
 			linkList.getLink().addAll(links);
@@ -787,7 +790,7 @@ public class Util {
 	 * @throws NetconfigException
 	 */
 	public static ArrayList<Link> parseSingleModelGraphLink(
-			ModelGraphLink modelGraphLink, boolean flagSubdivision)
+			ModelGraphLink modelGraphLink, boolean flagSubdivisionLink)
 			throws NetconfigException {
 
 		// instantiate a Link object
@@ -795,7 +798,7 @@ public class Util {
 
 		// totalCellNumber: number of loops carried out next
 		int totalCellNumber;
-		if (!flagSubdivision) {
+		if (!flagSubdivisionLink) {
 			totalCellNumber = 1;
 		} else {
 			totalCellNumber = modelGraphLink.nbCells;
@@ -808,7 +811,7 @@ public class Util {
 			// set node name (to empty string)
 			link.setName("");
 
-			if (!flagSubdivision) {
+			if (!flagSubdivisionLink) {
 				// set link id
 				link.setId(Integer.toString(modelGraphLink.id));
 
@@ -896,13 +899,14 @@ public class Util {
 	 *         stations
 	 */
 	public static SensorList parsePeMSSensors(
-			netconfig.SensorPeMS[] sensorsPeMS, boolean flagSubdivision) {
+			netconfig.SensorPeMS[] sensorsPeMS, boolean flagSubdivisionLink) {
 
+		Monitor.out(Util.LINE);
 		SensorList sensorList = new SensorList();
 		for (int i = 0; i < sensorsPeMS.length; i++) {
 
 			Sensor sensor = parseSinglePeMSSensor(sensorsPeMS[i],
-					flagSubdivision);
+					flagSubdivisionLink);
 
 			// add sensor to the list
 			sensorList.getSensor().add(sensor);
@@ -924,7 +928,7 @@ public class Util {
 	 * @return a Sensor object in TOPL format
 	 */
 	public static Sensor parseSinglePeMSSensor(netconfig.SensorPeMS sensorPeMS,
-			boolean flagSubdivision) {
+			boolean flagSubdivisionLink) {
 
 		// instantiate a Sensor object
 		Sensor sensor = new Sensor();
@@ -961,7 +965,7 @@ public class Util {
 
 		// set the link id that sensor is on
 		Links links = new Links();
-		if (!flagSubdivision) {
+		if (!flagSubdivisionLink) {
 			links.setContent(Integer.toString(sensorPeMS.link.id));
 		} else {
 			int cellID;

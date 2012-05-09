@@ -112,12 +112,12 @@ public class NetGen {
 		// list of nodes and links
 		NodeList nodeList = Util.parseModelGraphNodes(modelGraphLinks,
 				modelGraphNodes, sources, sinks, netHybrid, terminalNodesID,
-				signalNodesID, freewayNodesID, Util.flagSubdivision);
+				signalNodesID, freewayNodesID, Util.flagSubdivisionLink);
 		LinkList linkList = Util.parseModelGraphLinks(modelGraphLinks,
 				modelGraphNodes, sources, sinks, netHybrid, terminalNodesID,
-				Util.flagSubdivision);
+				Util.flagSubdivisionLink);
 		SensorList sensorList = Util.parsePeMSSensors(sensorsPeMS,
-				Util.flagSubdivision);
+				Util.flagSubdivisionLink);
 
 		// adaptation for TOPL simulation:
 		// each terminal node can only be associated with one link
@@ -162,7 +162,7 @@ public class NetGen {
 		Monitor.out("Number of TOPL sensors: " + sensorList.getSensor().size());
 
 		Monitor.out(Util.LINE);
-		if (!Util.flagSubdivision) {
+		if (!Util.flagSubdivisionLink) {
 			int rampCount = sources.length + sinks.length
 					- terminalNodesID.size();
 			int tNodeCount = modelGraphNodes.length + rampCount;
@@ -173,16 +173,16 @@ public class NetGen {
 			Monitor.out("Number of original nodes: " + modelGraphNodes.length);
 			Monitor.out("Number of ramp links: " + rampCount);
 		} else {
-			int totalSubdivision = 0;
+			int totalSubdivisionLink = 0;
 			for (ModelGraphLink l : modelGraphLinks) {
-				totalSubdivision += l.nbCells;
+				totalSubdivisionLink += l.nbCells;
 			}
-			Monitor.out("Total subdivision: " + totalSubdivision);
+			Monitor.out("Total link subdivision: " + totalSubdivisionLink);
 			int rampCount = sources.length + sinks.length
 					- terminalNodesID.size();
-			int tNodeCount = modelGraphNodes.length + totalSubdivision
+			int tNodeCount = modelGraphNodes.length + totalSubdivisionLink
 					- modelGraphLinks.length + rampCount;
-			int tLinkCount = totalSubdivision + rampCount;
+			int tLinkCount = totalSubdivisionLink + rampCount;
 			Monitor.out("Number of TOPL nodes (from MM): " + tNodeCount);
 			Monitor.out("Number of TOPL links (from MM): " + tLinkCount);
 		}
