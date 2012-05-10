@@ -192,8 +192,9 @@ public class Util {
 			float minLinkLength = speedLimit * dt;
 			float linkLength = l.getLength();
 			if (linkLength < minLinkLength) {
-				Monitor.err("Short link (MM): link = " + l.id + ", length = "
-						+ linkLength + ", minLength = " + minLinkLength);
+				Monitor.err("Short link (MM): link = " + l.id + ", speed = "
+						+ speedLimit + ", length = " + linkLength
+						+ ", minLength = " + minLinkLength);
 				flag = false;
 			}
 		}
