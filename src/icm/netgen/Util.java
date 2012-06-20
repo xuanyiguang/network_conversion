@@ -60,8 +60,8 @@ public class Util {
 
 	/** the nid of the Highway network to obtain links and nodes */
 	// nid = 227 for the US-101 CSMP network (Highway version)
-	// nid = 262 for the US-101 CSMP network (Highway version) (truncated at University due to sensor issue)
-	public static int nidHighway = 262;
+	// nid = 266 for the US-101 CSMP network (Highway version) (truncated at University due to sensor issue)
+	public static int nidHighway = 266;
 	/** the nid of the Hybrid network to obtain ramps */
 	// nid = 228 for the US-101 CSMP network (Hybrid version)
 	public static int nidHybrid = 228;
@@ -667,11 +667,11 @@ public class Util {
 				Point point = new Point();
 				try {
 					point.setLat(new BigDecimal(modelGraphLink
-							.getCoordinate(cellID / modelGraphLink.nbCells
-									* modelGraphLink.length).lat));
+							.getCoordinate(cellID * modelGraphLink.length
+									/ modelGraphLink.nbCells).lat));
 					point.setLng(new BigDecimal(modelGraphLink
-							.getCoordinate(cellID / modelGraphLink.nbCells
-									* modelGraphLink.length).lon));
+							.getCoordinate(cellID * modelGraphLink.length
+									/ modelGraphLink.nbCells).lon));
 				} catch (NetconfigException e) {
 					e.printStackTrace();
 					Monitor.err("Failed to find NavteqNode of the ModelGraphNode!");
