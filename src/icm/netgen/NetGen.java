@@ -123,6 +123,7 @@ public class NetGen {
 		// nodeList.getNode().size());
 		// Monitor.out("Number of links modified: " +
 		// linkList.getLink().size());
+		Util.negativeID(nodeList, linkList, sensorList);
 
 		Monitor.out(Util.LINE);
 		int nodeT = 0;

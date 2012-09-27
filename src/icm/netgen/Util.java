@@ -1380,7 +1380,7 @@ public class Util {
 	 * freeway. Also, the node appears twice in the nodeList. The solution is to
 	 * rename the one of the node id, and also update the link begin/end node.
 	 * 
-	 * @param nodeList
+	 * @param nodeList, linkList
 	 */
 	public static void renameDuplicateNodes(NodeList nodeList, LinkList linkList) {
 
@@ -1397,6 +1397,48 @@ public class Util {
 				end.setNodeId("199" + nodeID);
 				linkList.getLink().get(linkID).setEnd(end);
 			}
+		}
+	}
+
+	/**
+	 * Convert all node id and link id to be negative numbers.
+	 * 
+	 * @param nodeList, linkList, sensorList
+	 */
+	public static void negativeID(NodeList nodeList, LinkList linkList, SensorList sensorList) {
+		for (int i = 0; i < nodeList.getNode().size(); i++) {
+			Node node = nodeList.getNode().get(i);
+			// node id
+			String nodeID = node.getId();
+			node.setId("-" + nodeID);
+			// link id of node output link
+			for (int j = 0; j < node.getOutputs().getOutput().size(); j++) {
+				String oLinkID = node.getOutputs().getOutput().get(j).getLinkId();
+				node.getOutputs().getOutput().get(j).setLinkId("-" + oLinkID);
+			}
+			// link id of node input link
+			for (int j = 0; j < node.getInputs().getInput().size(); j++) {
+				String iLinkID = node.getInputs().getInput().get(j).getLinkId();
+				node.getInputs().getInput().get(j).setLinkId("-" + iLinkID);
+			}
+		}
+		for (int i = 0; i < linkList.getLink().size(); i++) {
+			Link link = linkList.getLink().get(i);
+			// link id
+			String linkID = link.getId();
+			link.setId("-" + linkID);
+			// node id of link begin node
+			String bNodeID = link.getBegin().getNodeId();
+			link.getBegin().setNodeId("-" + bNodeID);
+			// node id of link end node
+			String eNodeID = link.getEnd().getNodeId();
+			link.getEnd().setNodeId("-" + eNodeID);
+		}
+		for (int i = 0; i < sensorList.getSensor().size(); i++) {
+			Sensor sensor = sensorList.getSensor().get(i);
+			// link id of sensor
+			String linkID = sensor.getLinks().getContent();
+			sensor.getLinks().setContent("-" + linkID);
 		}
 	}
 
@@ -1451,4 +1493,5 @@ public class Util {
 			}
 		}
 	}
+
 }
