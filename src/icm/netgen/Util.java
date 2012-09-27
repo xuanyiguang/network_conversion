@@ -666,6 +666,8 @@ public class Util {
 				Position position = new Position();
 				Point point = new Point();
 				try {
+					// new nodes (intermediate nodes) are not produced with linear interpolation
+					// the lat/lng of the nodes are determined from the geom of the link it is on
 					point.setLat(new BigDecimal(modelGraphLink
 							.getCoordinate(cellID * modelGraphLink.length
 									/ modelGraphLink.nbCells).lat));
