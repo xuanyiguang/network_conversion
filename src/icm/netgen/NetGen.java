@@ -45,6 +45,7 @@ public class NetGen {
 
 		// instantiate the Highway network
 		Monitor.set_nid(Util.nidHighway);
+		Monitor.set_db_env("live-local");
 		netHighway = new netconfig.Network();
 		Monitor.out(Util.LINE);
 		Monitor.out("Highway network loaded with nid = " + Util.nidHighway);

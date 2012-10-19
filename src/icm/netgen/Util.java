@@ -48,25 +48,25 @@ public class Util {
 	/** the simulation time step, step to 6 seconds according to MM */
 	public static BigDecimal NETWORK_DT = new BigDecimal(6);
 	/** id of the network in TOPL schema */
-	public static String NETWORK_ID = "1";
+	public static String NETWORK_ID = "2";
 	/** name of the network in TOPL schema */
-	public static String NETWORK_NAME = "US101 CSMP network with ramps and PeMS stations and links subdivided and truncated";
+	public static String NETWORK_NAME = "Test network for new students";
 
 	/** divide long links into smaller links (cells) when flag = true */
 	public static boolean flagSubdivisionLink = true;
 
 	/** divide the network into north and south directions when flag = true */
-	public static boolean flagSubdivisionNetwork = true;
+	public static boolean flagSubdivisionNetwork = false;
 
 	/** the nid of the Highway network to obtain links and nodes */
 	// nid = 227 for the US-101 CSMP network (Highway version)
 	// nid = 266 for the US-101 CSMP network (Highway version) (truncated at University due to sensor issue)
-	public static int nidHighway = 266;
+	public static int nidHighway = 366;
 	/** the nid of the Hybrid network to obtain ramps */
 	// nid = 228 for the US-101 CSMP network (Hybrid version)
-	public static int nidHybrid = 228;
+	public static int nidHybrid = 371;
 	/** output file name */
-	public static String OUTPUT_FILENAME = "US101_CSMP_ramp_PeMS_subdivisionlink_truncated";
+	public static String OUTPUT_FILENAME = "testNetwork";
 
 	/**
 	 * 
